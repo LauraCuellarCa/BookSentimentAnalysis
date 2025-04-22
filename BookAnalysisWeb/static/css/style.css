@@ -1,0 +1,101 @@
+/* Main styling */
+body {
+    background-color: #f8f9fa;
+    color: #212529;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+/* File upload area */
+.drop-area {
+    border: 2px dashed #6c757d;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    margin: 20px 0;
+    position: relative;
+}
+
+.drop-area.highlight {
+    border-color: #0d6efd;
+    background-color: #e9f0ff;
+}
+
+.file-input {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.file-label {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 4px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+/* Results visualization */
+.visualization-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.result-img {
+    max-width: 100%;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Progress bar */
+.progress {
+    height: 20px;
+    border-radius: 5px;
+    margin: 15px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.25rem;
+    }
+    
+    .drop-area {
+        padding: 20px;
+    }
+}
+
+/* Tab styling */
+.nav-tabs .nav-link {
+    color: #495057;
+}
+
+.nav-tabs .nav-link.active {
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+/* Topics list */
+.topic-item {
+    background-color: #f0f7ff;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.topic-words {
+    font-style: italic;
+    color: #0d6efd;
+} 
