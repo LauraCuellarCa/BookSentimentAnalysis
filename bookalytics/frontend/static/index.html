@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookAlytics - Book Sentiment Analysis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <header class="py-4 text-center">
+            <h1 class="display-4"><i class="fas fa-book"></i> BookAlytics</h1>
+            <p class="lead">Discover the emotional landscape of your favorite books through AI-powered analysis</p>
+        </header>
+
+        <main class="container">
+            <div class="row justify-content-center">
+                <!-- Upload Section -->
+                <div class="col-md-8 mb-5">
+                    <div class="card shadow-sm">
+                        <div class="card-body" id="upload-container">
+                            <h2 class="card-title text-center mb-4">Upload Your Book</h2>
+                            
+                            <div id="drop-area" class="text-center p-5 mb-4">
+                                <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+                                <p>Drag & drop your book file here<br>or</p>
+                                <label for="file-input" class="btn btn-primary">Select File</label>
+                                <input type="file" id="file-input" accept=".txt,.pdf" hidden>
+                                <p class="mt-2 text-muted small">Supported formats: .txt, .pdf</p>
+                            </div>
+                            
+                            <div id="file-details" class="d-none">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-file-alt fa-2x me-3"></i>
+                                    <div>
+                                        <h5 id="file-name">filename.txt</h5>
+                                        <span id="file-size" class="text-muted">Size: 0 KB</span>
+                                    </div>
+                                    <button id="remove-file" class="btn btn-sm btn-outline-danger ms-auto">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <button id="analyze-button" class="btn btn-success w-100">
+                                    <i class="fas fa-chart-bar me-2"></i>Analyze Book
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Processing Section -->
+                <div class="col-md-8 mb-5 d-none" id="processing-container">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+                            <h2 class="card-title mb-4">Analyzing Your Book</h2>
+                            <div class="mb-4">
+                                <div class="progress mb-3">
+                                    <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                         role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <p id="progress-message">Starting analysis...</p>
+                            </div>
+                            <p class="text-muted">
+                                <i class="fas fa-info-circle me-2"></i>
+                                This process may take several minutes depending on the size of your book.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Results Section -->
+                <div class="col-md-10 d-none" id="results-container">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <h2 class="card-title"><i class="fas fa-book-open me-2"></i><span id="book-title">Book Title</span></h2>
+                            <p class="text-muted mb-0">Detected genre: <span id="book-genre">Unknown</span></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Text Analytics Summary -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light">
+                            <h3 class="card-title h5 mb-0">
+                                <i class="fas fa-list-alt me-2"></i>📘 Profile Summary
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <h4 class="h6">🔝 Top Overall Emotions</h4>
+                                    <ul class="list-group list-group-flush" id="emotion-summary-list">
+                                        <!-- Will be filled dynamically -->
+                                    </ul>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <h4 class="h6">🧑‍🤝‍🧑 Character Emotions</h4>
+                                    <div id="character-summary" class="small">
+                                        <!-- Will be filled dynamically -->
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <h4 class="h6">🧠 Topics</h4>
+                                    <div id="topic-summary" class="small">
+                                        <!-- Will be filled dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Visualizations -->
+                    <div class="row">
+                        <!-- Sentiment Trajectory -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header">
+                                    <h3 class="card-title h5 mb-0">
+                                        <i class="fas fa-chart-line me-2"></i>Sentiment Trajectory
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="vis-container">
+                                        <img id="polarity-vis" class="img-fluid mb-2" alt="Sentiment Trajectory">
+                                    </div>
+                                    <p class="text-muted small mb-0">
+                                        How the overall emotional tone of the book changes throughout chapters.
+                                    </p>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-sm btn-outline-primary download-vis" data-img="polarity-vis">
+                                        <i class="fas fa-download me-1"></i>Download
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Emotion Trajectory -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header">
+                                    <h3 class="card-title h5 mb-0">
+                                        <i class="fas fa-chart-area me-2"></i>Emotional Trajectory
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="vis-container">
+                                        <img id="emotions-vis" class="img-fluid mb-2" alt="Emotional Trajectory">
+                                    </div>
+                                    <p class="text-muted small mb-0">
+                                        The intensity of specific emotions throughout the book.
+                                    </p>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-sm btn-outline-primary download-vis" data-img="emotions-vis">
+                                        <i class="fas fa-download me-1"></i>Download
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Emotional Composition -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header">
+                                    <h3 class="card-title h5 mb-0">
+                                        <i class="fas fa-layer-group me-2"></i>Emotional Composition
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="vis-container">
+                                        <img id="emotion-composition-vis" class="img-fluid mb-2" alt="Emotional Composition">
+                                    </div>
+                                    <p class="text-muted small mb-0">
+                                        How different emotions combine throughout the narrative.
+                                    </p>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-sm btn-outline-primary download-vis" data-img="emotion-composition-vis">
+                                        <i class="fas fa-download me-1"></i>Download
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Character Emotions -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header">
+                                    <h3 class="card-title h5 mb-0">
+                                        <i class="fas fa-users me-2"></i>Character Emotions
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="vis-container">
+                                        <img id="character-emotions-vis" class="img-fluid mb-2" alt="Character Emotions">
+                                    </div>
+                                    <p class="text-muted small mb-0">
+                                        Dominant emotions associated with main characters.
+                                    </p>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-sm btn-outline-primary download-vis" data-img="character-emotions-vis">
+                                        <i class="fas fa-download me-1"></i>Download
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Topic Heatmap -->
+                        <div class="col-md-12 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-header">
+                                    <h3 class="card-title h5 mb-0">
+                                        <i class="fas fa-th me-2"></i>Topic Distribution
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="vis-container wide">
+                                        <img id="topic-heatmap-vis" class="img-fluid mb-2" alt="Topic Heatmap">
+                                    </div>
+                                    <p class="text-muted small mb-0">
+                                        How different themes and topics are distributed throughout the book's chapters.
+                                    </p>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-sm btn-outline-primary download-vis" data-img="topic-heatmap-vis">
+                                        <i class="fas fa-download me-1"></i>Download
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Download All Button -->
+                    <div class="text-center mb-5">
+                        <button id="download-all" class="btn btn-primary me-2">
+                            <i class="fas fa-download me-2"></i>Download All Visualizations
+                        </button>
+                        <button id="analyze-another" class="btn btn-success">
+                            <i class="fas fa-book me-2"></i>Analyze Another Book
+                        </button>
+                    </div>
+                    
+                    <!-- Recommendations Section -->
+                    <div class="card shadow-sm mb-4" id="recommendations-section">
+                        <div class="card-header bg-light">
+                            <h3 class="card-title h5 mb-0">
+                                <i class="fas fa-list-alt me-2"></i>📚 Book Recommendations
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="recommendations-loading" class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">Finding similar books based on emotional patterns...</p>
+                            </div>
+                            <div id="recommendations-content" class="d-none">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <h4 class="h6">📘 Similar Books</h4>
+                                        <div id="similar-books" class="small">
+                                            <!-- Will be filled dynamically -->
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <h4 class="h6">🧠 Emotional Matches</h4>
+                                        <div id="emotional-matches" class="small">
+                                            <!-- Will be filled dynamically -->
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <h4 class="h6">📚 Genre Clusters</h4>
+                                        <div id="genre-clusters" class="small">
+                                            <!-- Will be filled dynamically -->
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-info mt-3 small">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Recommendations improve as more books are analyzed. The system uses emotional patterns, genre, and narrative structure to find similar books.
+                                </div>
+                            </div>
+                            <div id="recommendations-error" class="d-none">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <span id="recommendations-error-message">Unable to generate recommendations.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="bg-light py-4 text-center">
+            <p class="mb-0">
+                <i class="fas fa-code me-2"></i>BookAlytics - AI-Powered Book Sentiment Analysis
+            </p>
+        </footer>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal fade" id="error-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Error</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="error-message"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html> 

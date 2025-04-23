@@ -1,0 +1,133 @@
+/* Main Styles */
+body {
+    background-color: #f8f9fa;
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+header {
+    background-color: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.card-header {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Drop Area */
+#drop-area {
+    border: 2px dashed #adb5bd;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+#drop-area:hover {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+#drop-area.highlight {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, this.0.1);
+}
+
+#drop-area i {
+    color: #6c757d;
+}
+
+/* Visualizations */
+.vis-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+    min-height: 240px;
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.vis-container.wide {
+    min-height: 300px;
+}
+
+.vis-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Progress Bar */
+.progress {
+    height: 1.5rem;
+    border-radius: 0.5rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 2.5rem;
+    }
+    
+    .vis-container {
+        min-height: 180px;
+    }
+    
+    .vis-container.wide {
+        min-height: 220px;
+    }
+}
+
+/* Text Analytics Summary */
+#emotion-summary-list, #character-summary, #topic-summary {
+    max-height: 350px;
+    overflow-y: auto;
+    line-height: 1.5;
+    font-family: monospace;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 14px;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+}
+
+#character-summary p, #topic-summary p {
+    margin-bottom: 0.25rem;
+}
+
+.card-header h3 {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Loading spinner */
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    min-height: 200px;
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+} 
