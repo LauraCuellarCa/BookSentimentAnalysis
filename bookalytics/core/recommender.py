@@ -118,7 +118,7 @@ class BookRecommender:
         # Only proceed with clustering if we have enough samples
         if len(filtered_vectors) < min_samples:
             logger.warning(f"Not enough books ({len(filtered_vectors)}) for clustering with min_samples={min_samples}")
-            return {0: filtered_meta}  # Return all as one cluster
+            return {"0": filtered_meta}  # Return all as one cluster
 
         # Standardize the data
         scaler = StandardScaler()
@@ -130,13 +130,15 @@ class BookRecommender:
             labels = clustering.labels_
         except Exception as e:
             logger.error(f"Clustering error: {str(e)}")
-            return {0: filtered_meta}  # Return all as one cluster
+            return {"0": filtered_meta}  # Return all as one cluster
 
         clusters = {}
         for label, book in zip(labels, filtered_meta):
             if label == -1:
                 continue  # skip outliers
-            clusters.setdefault(label, []).append(book)
+            # Convert NumPy int64 to regular Python string
+            cluster_key = str(int(label))
+            clusters.setdefault(cluster_key, []).append(book)
 
         return clusters
 
@@ -212,4 +214,30 @@ class BookRecommender:
                     "matches": emotional_recs
                 })
         
-        return recommendations 
+        # Convert any NumPy values to native Python types
+        return self._to_json_serializable(recommendations)
+        
+    def _to_json_serializable(self, obj):
+        """
+        Convert NumPy types to Python native types for JSON serialization.
+        
+        Args:
+            obj: Any Python object
+            
+        Returns:
+            object: JSON serializable object
+        """
+        if isinstance(obj, dict):
+            return {self._to_json_serializable(k): self._to_json_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list) or isinstance(obj, tuple):
+            return [self._to_json_serializable(i) for i in obj]
+        elif isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return self._to_json_serializable(obj.tolist())
+        elif isinstance(obj, np.bool_):
+            return bool(obj)
+        else:
+            return obj 

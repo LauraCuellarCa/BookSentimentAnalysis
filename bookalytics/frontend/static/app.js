@@ -316,11 +316,9 @@ function displayEmotionSummary(emotions) {
         const li = document.createElement('li');
         li.className = 'list-group-item p-1 border-0';
         
-        // Format the value with 3 decimal places
-        const formattedValue = value.toFixed(3);
-        
+        // Only show the emotion name, not the value
         li.innerHTML = `
-            <span>- ${capitalizeFirstLetter(emotion)}: ${formattedValue}</span>
+            <span>- ${capitalizeFirstLetter(emotion)}</span>
         `;
         
         emotionsList.appendChild(li);
@@ -342,7 +340,7 @@ function displayCharacterSummary(characterEmotions) {
             .slice(0, 3);
         
         const emotionText = topEmotions
-            .map(([emotion, value]) => `${emotion} (${value.toFixed(2)})`)
+            .map(([emotion, value]) => emotion)
             .join(', ');
         
         const characterElem = document.createElement('p');
@@ -473,12 +471,31 @@ async function fetchRecommendations(bookTitle) {
         // Fetch recommendations from API
         const response = await fetch(`${API_URL}/api/recommendations/${encodeURIComponent(bookTitle)}`);
         
+        // Handle different response status codes
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || 'Failed to get recommendations');
+            // Try to parse error as JSON
+            try {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to get recommendations');
+            } catch (jsonError) {
+                // If not JSON or other parsing error
+                const textError = await response.text();
+                if (textError.includes("Internal Server Error")) {
+                    throw new Error("Server error processing recommendations. Please try again later.");
+                } else {
+                    throw new Error('Not enough books analyzed yet to generate recommendations.');
+                }
+            }
         }
         
-        const recommendations = await response.json();
+        // Try to parse the response as JSON
+        let recommendations;
+        try {
+            recommendations = await response.json();
+        } catch (jsonError) {
+            console.error("Failed to parse recommendations JSON:", jsonError);
+            throw new Error("Invalid recommendation data received from server.");
+        }
         
         // Display recommendations
         displayRecommendations(recommendations);

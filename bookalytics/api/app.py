@@ -505,32 +505,33 @@ async def get_recommendations(book_title: str):
     """
     global recommender
     
-    if not BOOK_PROFILES:
-        raise HTTPException(
-            status_code=400, 
-            detail="No books in the recommendation database. Please analyze books first."
-        )
-    
-    if recommender is None:
-        # Initialize the recommender if not already done
-        recommender = BookRecommender(BOOK_PROFILES)
-    
     try:
+        if not BOOK_PROFILES:
+            return JSONResponse(
+                status_code=400,
+                content={"detail": "No books in the recommendation database. Please analyze books first."}
+            )
+        
+        if recommender is None:
+            # Initialize the recommender if not already done
+            recommender = BookRecommender(BOOK_PROFILES)
+        
         recommendations = recommender.get_recommendations_for_book(book_title)
         
         if "error" in recommendations:
-            raise HTTPException(
-                status_code=404, 
-                detail=f"Book '{book_title}' not found in the recommendation database."
+            return JSONResponse(
+                status_code=404,
+                content={"detail": f"Book '{book_title}' not found in the recommendation database."}
             )
         
         return recommendations
         
     except Exception as e:
-        if isinstance(e, HTTPException):
-            raise e
         logger.error(f"Error getting recommendations: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error getting recommendations: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": f"Error getting recommendations: {str(e)}"}
+        )
 
 @app.get("/books")
 async def get_books():
