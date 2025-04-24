@@ -128,19 +128,86 @@ class BookFeatureExtractor:
 
     def segment_by_chapter(self, text):
         """Segment book text into chapters."""
+        # Map of written number words to detect in chapter headings
+        number_words = [
+            "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+            "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty",
+            "twenty-one", "twenty-two", "twenty-three", "twenty-four", "twenty-five", "twenty-six", "twenty-seven", "twenty-eight", "twenty-nine", "thirty",
+            "thirty-one", "thirty-two", "thirty-three", "thirty-four", "thirty-five", "thirty-six", "thirty-seven", "thirty-eight", "thirty-nine", "forty",
+            "forty-one", "forty-two", "forty-three", "forty-four", "forty-five", "forty-six", "forty-seven", "forty-eight", "forty-nine", "fifty",
+            "fifty-one", "fifty-two", "fifty-three", "fifty-four", "fifty-five", "fifty-six", "fifty-seven", "fifty-eight", "fifty-nine", "sixty",
+            "sixty-one", "sixty-two", "sixty-three", "sixty-four", "sixty-five", "sixty-six", "sixty-seven", "sixty-eight", "sixty-nine", "seventy",
+            "seventy-one", "seventy-two", "seventy-three", "seventy-four", "seventy-five", "seventy-six", "seventy-seven", "seventy-eight", "seventy-nine", "eighty",
+            "eighty-one", "eighty-two", "eighty-three", "eighty-four", "eighty-five", "eighty-six", "eighty-seven", "eighty-eight", "eighty-nine", "ninety",
+            "ninety-one", "ninety-two", "ninety-three", "ninety-four", "ninety-five", "ninety-six", "ninety-seven", "ninety-eight", "ninety-nine", "one hundred"
+        ]
+        
+        # Create regex pattern for written numbers
+        written_numbers_pattern = "|".join(number_words)
+        
         # Match common chapter patterns
         chapter_patterns = [
+            # Numeric chapters
             r'Chapter \d+', r'CHAPTER \d+',
-            r'Chapter [IVXLCDM]+', r'CHAPTER [IVXLCDM]+'
+            # Roman numeral chapters
+            r'Chapter [IVXLCDM]+', r'CHAPTER [IVXLCDM]+',
+            # Written-out number chapters
+            fr'Chapter (?:{written_numbers_pattern})\b', 
+            fr'CHAPTER (?:{written_numbers_pattern})\b',
+            # Alternative formats
+            r'Chapter\s+\d+\.', r'CHAPTER\s+\d+\.',
+            # Simple numbered sections
+            r'\n\d+\.\s+', r'\n[IVXLCDM]+\.\s+'
         ]
         
         pattern = '|'.join(chapter_patterns)
-        chapters = re.split(pattern, text)
-        
-        # Remove empty chapters and trim whitespace
-        chapters = [chapter.strip() for chapter in chapters if chapter.strip()]
-        
-        return chapters
+        try:
+            chapters = re.split(pattern, text, flags=re.IGNORECASE)
+            
+            # Remove empty chapters and trim whitespace
+            chapters = [chapter.strip() for chapter in chapters if chapter.strip()]
+            
+            logger.info(f"Found {len(chapters)} chapters using regex patterns")
+            
+            # If no chapters found or only one large chapter, try alternate approach
+            if len(chapters) <= 1 and len(text) > 10000:
+                logger.info("Trying alternate chapter detection method")
+                # Fallback: Split by double newlines (paragraph breaks) and look for chapter-like headers
+                paragraphs = text.split('\n\n')
+                chapter_starts = []
+                
+                for i, para in enumerate(paragraphs):
+                    para_lower = para.lower().strip()
+                    if (para_lower.startswith('chapter') or 
+                        re.match(r'^\d+\.?\s', para_lower) or 
+                        re.match(r'^[ivxlcdm]+\.?\s', para_lower)):
+                        chapter_starts.append(i)
+                
+                if chapter_starts:
+                    # Use these indices to split the text
+                    new_chapters = []
+                    for i in range(len(chapter_starts)):
+                        start_idx = chapter_starts[i]
+                        end_idx = chapter_starts[i+1] if i < len(chapter_starts)-1 else len(paragraphs)
+                        chapter_text = '\n\n'.join(paragraphs[start_idx:end_idx])
+                        new_chapters.append(chapter_text)
+                    
+                    if len(new_chapters) > 1:
+                        chapters = new_chapters
+                        logger.info(f"Found {len(chapters)} chapters using alternate method")
+            
+            return chapters
+            
+        except Exception as e:
+            logger.error(f"Error in chapter detection: {e}")
+            # Fallback: Split into roughly equal chunks if regex fails
+            approx_chapter_size = 5000  # characters
+            if len(text) > approx_chapter_size * 2:
+                chunks = [text[i:i+approx_chapter_size] for i in range(0, len(text), approx_chapter_size)]
+                logger.info(f"Used fallback chunking: {len(chunks)} chunks")
+                return chunks
+            else:
+                return [text]
 
     def extract_lexicon_based_emotions(self, tokens):
         """Extract emotions based on lexicon matching."""
