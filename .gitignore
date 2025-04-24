@@ -36,7 +36,7 @@ data/model_cache/
 # Jupyter Notebook
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
-*.ipynb
+
 
 # IDE
 .idea/
